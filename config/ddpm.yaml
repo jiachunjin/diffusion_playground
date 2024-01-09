@@ -1,0 +1,48 @@
+trainer_config:
+  total_iters: 20000
+  sample_every_iters: 1000
+  save_every_iters: 50000
+  batch_size: 128
+  num_workers: 4
+
+optimizer_config:
+  lr: 0.0001
+
+diffusion_config:
+  timesteps: 1000
+  linear_beta_start: 0.0001
+  linear_beta_end: 0.02
+
+data_config:
+  root: './data'
+
+unet_config:
+  model: "MNISTDenoiseFn"
+  # num_class: *num_class  # uncomment this line for condition training
+  dims: 2
+  input_channel: 1
+  base_channel: 64
+  channel_multiplier: [ 1, 2, 2, 4 ] # there are len(channel_multiplier) blocks, downsample and upsample len(channel_multiplier)-1 times, no downsample or upsample at the last multiplier
+  num_residual_blocks_of_a_block: 2
+  dropout: 0.0
+  # below settings are useful only when the attention_resolutions list is not empty
+  attention_resolutions: [ ] # attention will be used at x-times downsampling if x in this list, empty for not using attention
+  use_new_attention_order: False  # True for MNIST and False for the others
+  num_heads: 1
+  head_channel: -1 # if head_channel==-1 then num_heads=num_heads, else num_heads=(multiplier*base_channel)//head_channel
+# unet_config:
+#   attention_resolutions:
+#   - 4
+#   base_channel: 64
+#   channel_multiplier:
+#   - 1
+#   - 2
+#   - 4
+#   - 8
+#   dims: 2
+#   dropout: 0.1
+#   head_channel: -1
+#   input_channel: 1
+#   num_heads: 4
+#   num_residual_blocks_of_a_block: 2
+#   use_new_attention_order: False
