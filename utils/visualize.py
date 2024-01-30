@@ -1,9 +1,6 @@
-import argparse
-import torch
 import matplotlib.pyplot as plt
 import torchvision.transforms as T
-import yaml
-import datetime
+
 
 def plot_tensors(X, num_row, num_col, mode):
     """
@@ -58,35 +55,3 @@ def save_img_tensors(X, num_row, num_col, mode, save_path):
                 axes[i//num_col][i%num_col].imshow(X_[i, ...], cmap='Greys')
     plt.savefig(save_path)
     plt.close(fig)
-
-
-def dataloader_one_batch(dataset):
-    x_list = []
-    y_list = []
-    for b, (x, y) in enumerate(dataset):
-        x_list.append(x)
-        y_list.append(y)
-    return torch.cat(x_list), torch.cat(y_list)
-
-def create_exp_name(comments=''):
-    x = datetime.datetime.now()
-    name = x.strftime("%y%m%d") + '-' + x.strftime("%X")
-    if len(comments) > 0:
-        name = comments + '_' + name
-    return name
-
-def load_config(path):
-    with open(path, 'r') as file:
-        try:
-            config = yaml.safe_load(file)
-        except yaml.YAMLError as exc:
-            print(exc)
-    return config
-
-def str2bool(v):
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')

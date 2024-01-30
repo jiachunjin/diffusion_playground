@@ -1,0 +1,32 @@
+training:
+  iters: 100000
+  sample_iters: 10000
+  save_iters: 20000
+  ema: False
+  ema_rate: 0.9999
+
+data:
+  root: './data'
+  dim: &dim 2
+  batch_size: 128
+  num_workers: 4
+
+diffusion:
+  timesteps: 1000
+  linear_beta_start: 0.0001
+  linear_beta_end: 0.02
+
+score_net:
+  model_type: 'MLP' #['MLP', 'UNet']
+  dim: *dim
+  hidden_dim: [32, 128, 32]
+  dropout_p: 0.1
+
+optimizer:
+  type: 'Adam' # ['Adam']
+  weight_decay: 0.000
+  optimizer: "Adam"
+  lr: 0.00005
+  beta1: 0.9
+  amsgrad: false
+  eps: 0.00000001

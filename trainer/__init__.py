@@ -1,1 +1,1 @@
-from .ddpm_trainer import DDPM_Trainer
+from .score_trainer import Score_Trainer

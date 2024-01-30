@@ -7,7 +7,7 @@ warnings.filterwarnings('ignore')
 
 class Diffusion():
     def __init__(self, config):
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = config['device']
         self.timesteps = config['timesteps']
         betas = np.linspace(config['linear_beta_start'], config['linear_beta_end'], self.timesteps)
         alphas = 1. - betas
