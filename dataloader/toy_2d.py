@@ -1,6 +1,16 @@
 import numpy as np
 
 
+class toy_2d():
+    def __init__(self, data, num_samples):
+        self.data = sample2d(data, num_samples)
+    
+    def __getitem__(self, index):
+        return self.data[index], -1
+
+    def __len__(self):
+        return len(self.data)
+
 def sample2d(data, batch_size=1000):
     """
     https://github.com/nicola-decao/BNAF/blob/master/data/generate2d.py

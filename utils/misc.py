@@ -3,6 +3,14 @@ import torch
 import yaml
 import datetime
 
+from model.score_net import EDM_Net
+
+def load_scorenet(ckpt_path):
+    state = torch.load(ckpt_path, map_location='cpu')
+    net_config = state['net_config']
+    net = EDM_Net(**net_config)
+    net.load_state_dict(state['net'])
+    return net
 
 def dataloader_one_batch(dataset):
     x_list = []

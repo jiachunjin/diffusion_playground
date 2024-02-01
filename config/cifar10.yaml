@@ -1,0 +1,32 @@
+training:
+  iters: 100000
+  sample_iters: 1000
+  save_iters: 10000
+  ema: False
+  ema_rate: 0.9999
+
+data:
+  root: './data'
+  type: 'rgb' #['2d', 'grey', 'rgb']
+  img_size: 32
+  train_batch: 100
+  test_batch: 100
+  num_workers: 4
+
+score_net:
+  model_type: 'UNet' #['MLP', 'UNet']
+  in_channels: 3
+  model_channels: 128
+  out_channels: 3
+  num_res_blocks: 2
+  attention_resolutions: [16, ]
+  dropout: 0.1
+
+optimizer:
+  type: 'Adam' # ['Adam']
+  weight_decay: 0.000
+  optimizer: "Adam"
+  lr: 0.0001
+  beta1: 0.9
+  amsgrad: false
+  eps: 0.00000001
