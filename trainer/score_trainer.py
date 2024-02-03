@@ -8,16 +8,18 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from model.score_net import EDM_Net
 from sampler import edm_sampler, naive_sampler
 from dataloader import data_rescale, inverse_data_rescale
-from utils.misc import is_master
+from utils.misc import is_master, load_scorenet
 from .base_trainer import Base_Trainer
 from .loss import Loss_EDM
+from .ema import EMAHelper
 
 """
 TODO:
 - setup the training for img data
     - Unet √
-    - ema
-    - multi-gpu
+    - multi-gpu √
+    - ema √
+    - snapshot and continue training √
 - evaluation
     - test FID
 - misc
@@ -32,13 +34,23 @@ class Score_Trainer(Base_Trainer):
         super().__init__(config, logger, log_dir, ckpt_dir, sample_dir)
         self._build_scorenet()
         self._build_optimizer()
-        self.net = DDP(self.net, device_ids=[self.device])
         self.loss_fn = Loss_EDM()
+        self.net = DDP(self.net, device_ids=[self.device])
+        if is_master() and self.config['training']['ema']:
+            self.ema_helper = EMAHelper(self.config['training']['ema_rate'])
+            self.ema_helper.register(self.net.module)
 
     def _build_scorenet(self):
-        self.net = EDM_Net(**self.config['score_net']).to(self.device)
-        if is_master():
-            self.logger.info('Network built')
+        if self.config['training']['resume']:
+            self.net, history_iters = load_scorenet(self.config['training']['resume_path'])
+            self.history_iters = history_iters
+            self.net = self.net.to(self.device)
+            if is_master():
+                self.logger.info(f'Resume training, history_iters: {self.history_iters}')
+        else:
+            self.net = EDM_Net(**self.config['score_net']).to(self.device)
+            if is_master():
+                self.logger.info('Train from scratch')
 
     def train(self):
         total_iters = int(self.config['training']['iters'])
@@ -60,6 +72,10 @@ class Score_Trainer(Base_Trainer):
                     self.optimizer.step()
                     pbar.update(1)
                     self.num_iters += 1
+                    self.history_iters += 1
+
+                    if is_master() and self.config['training']['ema']:
+                        self.ema_helper.update(self.net.module)
 
                     if self.num_iters % int(self.config['training']['sample_iters']) == 0:
                         if is_master():
@@ -74,7 +90,7 @@ class Score_Trainer(Base_Trainer):
                     if self.num_iters % int(self.config['training']['save_iters']) == 0:
                         if is_master():
                             self.save()
-                            self.logger.debug('Saved')
+                            self.logger.debug(f'Saved at history_iters: {self.history_iters}')
                     if self.num_iters >= total_iters:
                         done = True
                         break
@@ -83,16 +99,19 @@ class Score_Trainer(Base_Trainer):
     def save(self):
         state = {
             'net': self.net.module.state_dict(),
-            'net_config': self.config['score_net']
+            'ema': self.ema_helper.shadow.state_dict(),
+            'net_config': self.config['score_net'],
+            'history_iters': self.history_iters,
         }
-        save_path = os.path.join(self.ckpt_dir, f'{self.config["data"]["name"]}-{self.num_iters//1000:06d}.pt')
+        save_path = os.path.join(self.ckpt_dir, f'{self.config["data"]["name"]}.pt')
         torch.save(state, save_path)
 
     @torch.no_grad()
     def sample_2d(self, num_steps=1000, sampler=edm_sampler):
         self.net.eval()
         latents = torch.randn((5000, 2)).to(self.device)
-        samples = sampler(self.net.module, latents, verbose=False, num_steps=num_steps)
+        net = self.ema_helper.shadow if self.config['training']['ema'] else self.net.module
+        samples = sampler(net, latents, verbose=False, num_steps=num_steps)
         samples = samples.detach().cpu()
         plt.scatter(samples[:, 0], samples[:, 1], s=1)
         save_path = os.path.join(self.sample_dir, 'sample_'+str(self.num_iters)+'.png')
@@ -104,7 +123,8 @@ class Score_Trainer(Base_Trainer):
     def sample_img_rgb(self, img_size, num_samples=16, num_steps=1000, sampler=edm_sampler):
         self.net.eval()
         latents = torch.randn((num_samples, 3, img_size, img_size)).to(self.device)
-        samples = sampler(self.net.module, latents, verbose=False, num_steps=num_steps)
+        net = self.ema_helper.shadow if self.config['training']['ema'] else self.net.module
+        samples = sampler(net, latents, verbose=False, num_steps=num_steps)
         samples = samples.detach().cpu()
         self.net.train()
         return samples

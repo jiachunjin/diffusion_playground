@@ -17,7 +17,7 @@ class Base_Trainer():
         self.ckpt_dir = ckpt_dir
         self.sample_dir = sample_dir
         self.num_iters = 0
-        self.start_iter = 0
+        self.history_iters = 0
         self._build_dataloader()
 
     def _build_dataloader(self):

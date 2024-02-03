@@ -1,9 +1,12 @@
 training:
-  iters: 100000
-  sample_iters: 100
-  save_iters: 100
-  ema: False
+  iters: 500000
+  sample_iters: 1000
+  save_iters: 1000
+  ema: True
   ema_rate: 0.9999
+  resume: False
+  resume_path:
+
 
 data:
   root: './data'
@@ -29,5 +32,5 @@ optimizer:
   optimizer: "Adam"
   lr: 0.0001
   beta1: 0.9
-  amsgrad: false
+  amsgrad: False
   eps: 0.00000001

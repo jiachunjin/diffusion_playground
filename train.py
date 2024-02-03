@@ -45,6 +45,7 @@ def ddp_setup():
 def create_experiment(args):
     config_path = os.path.join('config', f'{args.config}.yaml')
     config = load_config(config_path)
+    log_dir = ckpt_dir = sample_dir = None
     if is_master():
         name = create_exp_name(args.exp_name)
         exp_dir = os.path.join('experiments', name)

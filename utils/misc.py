@@ -9,12 +9,15 @@ from model.score_net import EDM_Net
 def is_master():
     return int(os.environ["LOCAL_RANK"]) == 0
 
-def load_scorenet(ckpt_path):
+def load_scorenet(ckpt_path, use_ema=False):
     state = torch.load(ckpt_path, map_location='cpu')
     net_config = state['net_config']
     net = EDM_Net(**net_config)
-    net.load_state_dict(state['net'])
-    return net
+    if use_ema:
+        net.load_state_dict(state['ema'])
+    else:
+        net.load_state_dict(state['net'])
+    return net, state['history_iters']
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)

@@ -4,6 +4,8 @@ training:
   save_iters: 10000
   ema: False
   ema_rate: 0.9999
+  resume: False
+  resume_path: None
 
 data:
   type: '2d' #['2d', 'grey', 'rgb']
@@ -26,5 +28,5 @@ optimizer:
   optimizer: "Adam"
   lr: 0.0001
   beta1: 0.9
-  amsgrad: false
+  amsgrad: False
   eps: 0.00000001
