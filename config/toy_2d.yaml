@@ -12,6 +12,7 @@ data:
   test_batch: 500
   num_workers: 2
   n_toy_samples: 50000
+  rescale: False
 
 score_net:
   model_type: 'MLP' #['MLP', 'UNet']

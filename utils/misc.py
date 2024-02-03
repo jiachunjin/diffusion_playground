@@ -1,3 +1,4 @@
+import os
 import argparse
 import torch
 import yaml
@@ -5,12 +6,18 @@ import datetime
 
 from model.score_net import EDM_Net
 
+def is_master():
+    return int(os.environ["LOCAL_RANK"]) == 0
+
 def load_scorenet(ckpt_path):
     state = torch.load(ckpt_path, map_location='cpu')
     net_config = state['net_config']
     net = EDM_Net(**net_config)
     net.load_state_dict(state['net'])
     return net
+
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 def dataloader_one_batch(dataset):
     x_list = []

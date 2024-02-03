@@ -16,3 +16,11 @@ transform_dict = {
         transforms.ToTensor()
     ]),
 }
+
+def data_rescale(X):
+    X = 2 * X - 1.0
+    return X
+
+def inverse_data_rescale(X):
+    X = (X + 1.0) / 2.0
+    return torch.clamp(X, 0.0, 1.0)
