@@ -9,6 +9,15 @@ from model.score_net import EDM_Net
 def is_master():
     return int(os.environ["LOCAL_RANK"]) == 0
 
+def append_dims(x, target_dims):
+    """Appends dimensions to the end of a tensor until it has target_dims dimensions."""
+    dims_to_append = target_dims - x.ndim
+    if dims_to_append < 0:
+        raise ValueError(
+            f"input has {x.ndim} dims but target_dims is {target_dims}, which is less"
+        )
+    return x[(...,) + (None,) * dims_to_append]
+
 def load_scorenet(ckpt_path, use_ema=False):
     state = torch.load(ckpt_path, map_location='cpu')
     net_config = state['net_config']
@@ -18,6 +27,10 @@ def load_scorenet(ckpt_path, use_ema=False):
     else:
         net.load_state_dict(state['net'])
     return net, state['history_iters']
+
+def requires_grad(parameters, flag=True):
+    for p in parameters:
+        p.requires_grad = flag
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)

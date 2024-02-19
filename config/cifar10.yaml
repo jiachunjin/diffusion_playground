@@ -1,11 +1,12 @@
 training:
-  iters: 500000
-  sample_iters: 1000
-  save_iters: 1000
+  iters: 5000000
+  sample_iters: 10000
+  save_iters: 100000
   ema: True
   ema_rate: 0.9999
-  resume: False
-  resume_path:
+  resume: True
+  resume_path: '/home/jiachun/codebase/diffusion_playground/experiments/cifar_new_240207-10:14:02/checkpoints/cifar10.pt'
+  # resume_path: '/home/jiachun/codebase/diffusion_playground/experiments/cifar_ema_240203-14:51:16/checkpoints/cifar10.pt'
 
 
 data:
@@ -30,7 +31,7 @@ optimizer:
   type: 'Adam' # ['Adam']
   weight_decay: 0.000
   optimizer: "Adam"
-  lr: 0.0001
+  lr: 0.0002
   beta1: 0.9
   amsgrad: False
   eps: 0.00000001

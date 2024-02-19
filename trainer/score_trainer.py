@@ -21,11 +21,12 @@ TODO:
     - ema √
     - snapshot and continue training √
 - evaluation
-    - test FID
+    - test FID √
+    - evaluate likelihood
 - misc
     - add label and conditional
 - distillation
-    - 1d toy data with trjactory plot
+    - 1d toy data with trajectory plot
     - flow matching
 """
 
@@ -59,7 +60,8 @@ class Score_Trainer(Base_Trainer):
         with tqdm(total=total_iters) as pbar:
             pbar.update(self.num_iters)
             while not done:
-                self.train_loader.sampler.set_epoch(epoch)
+                if torch.cuda.device_count() > 1:
+                    self.train_loader.sampler.set_epoch(epoch)
                 for x, y in self.train_loader:
                     x = x.float().to(self.device)
                     if self.config['data']['rescale']:
@@ -73,7 +75,6 @@ class Score_Trainer(Base_Trainer):
                     pbar.update(1)
                     self.num_iters += 1
                     self.history_iters += 1
-
                     if is_master() and self.config['training']['ema']:
                         self.ema_helper.update(self.net.module)
 

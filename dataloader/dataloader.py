@@ -1,3 +1,5 @@
+import torch
+
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 
@@ -19,8 +21,8 @@ def prepare_dataloader(name, train_batch, test_batch, num_workers, **kwargs):
     train_loader = DataLoader(train_data,
                               batch_size=train_batch,
                               pin_memory=True,
-                              shuffle=False,
-                              sampler=DistributedSampler(train_data),
+                              shuffle=False if torch.cuda.device_count() > 1 else True,
+                              sampler=DistributedSampler(train_data) if torch.cuda.device_count() > 1 else None,
                               drop_last=True,
                               num_workers=num_workers)
     # use a single device when operating on test_loader

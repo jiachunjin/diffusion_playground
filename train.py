@@ -7,13 +7,14 @@ import torch
 from tensorboard import program
 from torch.distributed import init_process_group, destroy_process_group
 
-from trainer import Score_Trainer
+from trainer import Score_Trainer, CD_Trainer
 from utils.misc import create_exp_name, load_config, str2bool, is_master
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--exp_name', type=str, required=True)
+    parser.add_argument('-m', '--mode', type=str, required=True, choices=['train', 'cd'])
     parser.add_argument('-d', '--data', type=str, choices=['cifar10', '8gaussians', '2spirals', 'checkerboard'], required=True)
     parser.add_argument('-c', '--config', type=str, required=True)
     parser.add_argument('--seed', type=int, default=1234, help='random seed')
@@ -82,7 +83,10 @@ def main(args):
     # ================================================================================
     config['data']['name'] = args.data # mainly used for toy_data
     # Train
-    trainer = Score_Trainer(config, my_logger, log_dir, ckpt_dir, sample_dir)
+    if args.mode == 'train':
+        trainer = Score_Trainer(config, my_logger, log_dir, ckpt_dir, sample_dir)
+    elif args.mode == 'cd':
+        trainer = CD_Trainer(config, my_logger, log_dir, ckpt_dir, sample_dir)
     if is_master():
         my_logger.info('Start to train')
     trainer.train()
@@ -97,3 +101,13 @@ if __name__ == '__main__':
 
 # python train.py -n test -d 8gaussians -c toy_2d --verbose info --tensorboard false
 # CUDA_VISIBLE_DEVICES="0,1,2,3" OMP_NUM_THREADS=8 torchrun --standalone --nnodes=1 --nproc_per_node=1 train.py -n test -d cifar10 -c cifar10 --verbose info
+    
+# nohup sh multi_gpu_train.sh > ./log.txt 2>&1 &
+"""
+train:
+
+CUDA_VISIBLE_DEVICES="0" OMP_NUM_THREADS=16 torchrun --standalone --nnodes=1 --nproc_per_node=1 train.py -m train -n cbd -d checkerboard -c toy_2d --verbose info
+
+consistency distillation:
+CUDA_VISIBLE_DEVICES="5" OMP_NUM_THREADS=16 torchrun --standalone --nnodes=1 --nproc_per_node=1 train.py -m cd -n cd_checker -d checkerboard -c cd_2d --verbose info
+"""

@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES="1,2" OMP_NUM_THREADS=16 torchrun --standalone --nnodes=1 --nproc_per_node=gpu train.py -n cifar_0218 -d cifar10 -c cifar10 --verbose info --tb_port 9991 --mode train

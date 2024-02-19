@@ -13,6 +13,7 @@ transform_dict = {
     # ]),
     'cifar10': transforms.Compose([
         transforms.Resize([32, 32]),
+        transforms.RandomHorizontalFlip(p=0.5),
         transforms.ToTensor()
     ]),
 }

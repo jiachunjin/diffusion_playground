@@ -4,6 +4,9 @@ import copy
 class EMAHelper():
     def __init__(self, mu=0.999):
         self.mu = mu
+    
+    def update_mu(self, new_mu):
+        self.mu = new_mu
 
     def register(self, module):
         self.shadow = copy.deepcopy(module)
