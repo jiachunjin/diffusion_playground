@@ -2,6 +2,27 @@ import torch
 import numpy as np
 from tqdm.autonotebook import tqdm
 
+from utils.misc import append_dims
+
+def consistency_sampler(net, latents, sigma_max, num_steps, rho=7, sigma_min=0.002):
+    N, d = latents.shape
+    if num_steps == 1:
+        samples = net(sigma_max * latents, append_dims(sigma_max * torch.ones((N,), dtype=torch.float32), latents.ndim)).detach()
+    else:
+        step_indices = torch.arange(num_steps, dtype=torch.float32, device=latents.device)
+        t_steps = (sigma_max ** (1 / rho) + step_indices / (num_steps - 1) * (sigma_min ** (1 / rho) - sigma_max ** (1 / rho))) ** rho
+        epsilon = t_steps[-1]
+        samples = net(sigma_max * latents, append_dims(sigma_max * torch.ones((N,), dtype=torch.float32), latents.ndim)).detach()
+        for i in range(1, len(t_steps)):
+            t = t_steps[i]
+            x_tau  = samples + (t**2 - epsilon**2).sqrt() * torch.randn_like(latents)
+            samples = net(x_tau, append_dims(t * torch.ones((N,), dtype=torch.float32), latents.ndim)).detach()
+    return samples
+
+
+            
+
+
 
 def naive_sampler(net, latents, verbose=True, num_steps=200, rho=7, sigma_max=80, sigma_min=0.002):
     step_indices = torch.arange(num_steps, dtype=torch.float32, device=latents.device)
@@ -21,7 +42,6 @@ def naive_sampler(net, latents, verbose=True, num_steps=200, rho=7, sigma_max=80
             x_next = x_cur + (t_next - t_cur) * d
             pbar.update(1)
     return x_next
-
 
 
 def edm_sampler(

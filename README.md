@@ -8,14 +8,16 @@ I play with diffusion/consistency models here.
 - [x] Evaluate FID for CIFAR 10
 - [ ] Evaluate likelihood
 - [x] Consistency Distillation for toy data
+- [x] Multi-step generation with consistency model
 - [ ] Consistency Training
+- [ ] Consistency Trajectory Model
 - [ ] Adversarial Diffusion Distillation
 - [ ] Progressive Distillation
 - [ ] UFOGen
 
 ### Current Results
-The output of the Heun solver with 20 steps:
-![heun_output](./assets/heun_output.png)
-
+Temperal results:
+![heun_output](./assets/checkerboard_output.png)
+Results from the Heun solver and consistency distillation with different steps.
 
 
